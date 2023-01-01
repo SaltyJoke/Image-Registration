@@ -1,0 +1,27 @@
+{
+  "name": "image-registration",
+  "version": "1.0.0",
+  "description": "Tests image registration interactively on a web page.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node node_modules/http-server/bin/http-server -c-1",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SaltyJoke/Image-Registration.git"
+  },
+  "keywords": [
+    "image registration",
+    "imaging"
+  ],
+  "author": "Lilly He",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/SaltyJoke/Image-Registration/issues"
+  },
+  "homepage": "https://github.com/SaltyJoke/Image-Registration#readme",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}

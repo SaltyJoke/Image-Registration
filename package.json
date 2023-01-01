@@ -4,6 +4,7 @@
   "description": "Tests image registration interactively on a web page.",
   "main": "index.js",
   "scripts": {
+    "build": "webpack --mode=development",
     "start": "node node_modules/http-server/bin/http-server -c-1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +23,12 @@
   },
   "homepage": "https://github.com/SaltyJoke/Image-Registration#readme",
   "dependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "typescript": "^4.9.4"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }

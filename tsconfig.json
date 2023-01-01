@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "es2015",
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2015", "dom", "dom.iterable"],
+    "allowJs": true,
+    "moduleResolution": "node",
+  },
+  "include": ["src/**/*"]
+}

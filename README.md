@@ -1,4 +1,4 @@
-# Image-Registration
+# Image Registration
 
 ## Overview
 This is a test program for image registration.

@@ -1,2 +1,3 @@
-const message: string = "Hi";
-console.log(message);
+import subscribeEventHandlers from './eventHandling';
+
+subscribeEventHandlers();

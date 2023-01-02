@@ -4,11 +4,53 @@
 <head>
     <meta charset="utf-8">
     <title>Image Registration Test</title>
-    <script src="dist/main.js"></script>
+    <style>
+        select {
+            margin: 2px 2px
+        }
+
+        p {
+            display: inline;
+            margin: 2px 2px
+        }
+
+        canvas {
+            display: inline;
+            margin: 2px 2px
+        }
+
+        button {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px 2px
+        }
+    </style>
 </head>
 
 <body>
     <h1>Image Registration Test</h1>
+    <br>
+    <table>
+        <tr>
+            <th>
+                <p>First DICOM image</p>
+                <input type="file" id="choosefile-0" accept=".dcm" />
+            </th>
+            <th>
+                <p>Second DICOM image</p>
+                <input type="file" id="choosefile-1" accept=".dcm" />
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <canvas id="canvas-0" width="40" height="40"></canvas>
+            </th>
+            <th>
+                <canvas id="canvas-1" width="40" height="40"></canvas>
+            </th>
+        </tr>
+    </table>
 </body>
+<script src="dist/main.js"></script>
 
 </html>

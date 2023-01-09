@@ -1,7 +1,7 @@
 import readDicomFile from './rawdicom/readDicomFile';
 import DicomInstance from './rawdicom/instance/DicomInstance';
 import dicomToCanvas from './rendering/dicomToCanvas';
-import imagePair from './registration/imagePair';
+import registrationHandling from './registration/registrationHandling';
 
 function fileChosen(event: Event) {
   const fileSelector = event.target as HTMLInputElement;
@@ -17,7 +17,7 @@ function fileChosen(event: Event) {
         windowWidth: 1500,
       });
       canvas.getContext('2d').putImageData(imageData, 0, 0);
-      imagePair.setImage(index, imageData);
+      registrationHandling.setImage(index, imageData);
     });
 }
 
@@ -26,12 +26,14 @@ function getIndexFromId(id: string) {
   return Number.parseInt(words[1]);
 }
 
-function align() {
-  console.log("I'm aligning the images");
+function trackMouse(event: MouseEvent) {
+  registrationHandling.setOffsets(event.clientX % 200 - 100, event.clientY % 200 - 100);
+  registrationHandling.startRegistration();
 }
 
 export default function subscribeEventHandlers() {
   document.getElementById('choosefile-0').addEventListener('change', fileChosen);
   document.getElementById('choosefile-1').addEventListener('change', fileChosen);
-  document.getElementById('button-align').addEventListener('click', imagePair.startRegistration);
+  document.getElementById('button-align').addEventListener('click', registrationHandling.startRegistration);
+  document.addEventListener('mousemove', trackMouse);
 }

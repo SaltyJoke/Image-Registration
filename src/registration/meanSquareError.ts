@@ -4,11 +4,9 @@ export function meanSquareError(args: imagePairAndOffset) {
     let diff = commonAreaDifference(args);
     let total = 0;
     for (let i = 0; i < diff.length; i++) {
-        for (let j = 0; j < diff[0].length; j++) {
-            total += diff[i][j] * diff[i][j];
-        }
+        total += diff[i] * diff[i];
     }
-    return total / (diff.length * diff[0].length);
+    return total / diff.length;
 }
 
 function commonAreaDifference(args: imagePairAndOffset) {

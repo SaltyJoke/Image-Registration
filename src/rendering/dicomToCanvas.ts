@@ -8,9 +8,9 @@ interface DicomToCanvasArgs {
   windowWidth: number,
 }
 
-export default function dicomToCanvas(args: DicomToCanvasArgs): boolean {
+export default function dicomToCanvas(args: DicomToCanvasArgs): ImageData {
   if (!validate(args)) {
-    return false;
+    return null;
   }
 
   const { dicom, canvas } = args;
@@ -20,8 +20,7 @@ export default function dicomToCanvas(args: DicomToCanvasArgs): boolean {
   const imageData = context.createImageData(canvas.width, canvas.height);
   const buffer = createImageBuffer(args);
   imageData.data.set(buffer);
-  context.putImageData(imageData, 0, 0);
-  return true;
+  return imageData;
 }
 
 function validate(args: DicomToCanvasArgs) {

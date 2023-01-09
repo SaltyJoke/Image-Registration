@@ -20,16 +20,12 @@ function commonAreaDifference(args: imagePairAndOffset) {
     const im2 = createIntensityArray(args.image2);
     const diff = [];
     for (let y1 = 0; y1 < h1; y1++) {
-        const row = [];
         for (let x1 = 0; x1 < w1; x1++) {
             let x2 = x1 - args.xOffset;
             let y2 = y1 - args.yOffset;
             if (x2 >= 0 && x2 < w2 && y2 >= 0 && y2 < h2) {
-                row.push(im2[y2][x2] - im1[y1][x1]);
+                diff.push(im2[y2*w2+x2] - im1[y1*w1+x1]);
             }
-        }
-        if (row.length != 0) {
-            diff.push(row);
         }
     }
     return diff;
@@ -37,17 +33,9 @@ function commonAreaDifference(args: imagePairAndOffset) {
 
 export function createIntensityArray(image: ImageData) {
     const data = image.data;
-    const w = image.width;
-    const h = image.height;
     const out = [];
-    for (let y = 0; y < h; y++) {
-        const row = [];
-        for (let x = 0; x < w; x++) {
-            let pos = ((w*y)+x)*4;
-            let value = intensity(data[pos], data[pos+1], data[pos+2]);
-            row.push(value);
-        }
-        out.push(row);
+    for (let i = 0; i < data.length; i += 4) {
+        out.push(intensity(data[i], data[i+1], data[i+2]));
     }
     return out;
 }

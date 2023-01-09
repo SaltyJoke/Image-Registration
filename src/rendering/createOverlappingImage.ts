@@ -14,9 +14,9 @@ export function createOverlappingImage(args: imagePairAndOffset) {
             let x2 = x1 - args.xOffset;
             let y2 = y1 - args.yOffset;
             const pos = (y1 * w1 + x1) * 4;
-            out[pos] = im1[y1][x1] * 255; // R
+            out[pos] = im1[pos/4] * 255; // R
             if (x2 >= 0 && x2 < w2 && y2 >= 0 && y2 < h2) {
-                out[pos + 1] = im2[y2][x2] * 255; // G
+                out[pos + 1] = im2[y2*w2+x2] * 255; // G
             }
             out[pos + 2] = 0; // B
             out[pos + 3] = 255; // A

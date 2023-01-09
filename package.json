@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/SaltyJoke/Image-Registration#readme",
   "dependencies": {
-    "@techstark/opencv-js": "^4.6.0-release.1",
     "http-server": "^14.1.1",
     "typescript": "^4.9.4"
   },

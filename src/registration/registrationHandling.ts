@@ -1,4 +1,5 @@
 import { illustrateResult } from "../rendering/illustrateResult";
+import ImageReader from "../rendering/interfaces/ImageReader";
 import imagePairAndOffset from "./imagePairAndOffset";
 import { meanSquareError } from "./meanSquareError";
 
@@ -9,7 +10,7 @@ const inputs: imagePairAndOffset = {
     yOffset: 0
 }
 
-function setImage(index: number, im: ImageData) {
+function setImage(index: number, im: ImageReader) {
     if (index == 0) {
         inputs.image1 = im;
     } else {

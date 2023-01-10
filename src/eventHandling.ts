@@ -2,6 +2,7 @@ import readDicomFile from './rawdicom/readDicomFile';
 import DicomInstance from './rawdicom/instance/DicomInstance';
 import dicomToCanvas from './rendering/dicomToCanvas';
 import registrationHandling from './registration/registrationHandling';
+import { dicomToImageReader } from './rawdicom/dicomToImageReader';
 
 function fileChosen(event: Event) {
   const fileSelector = event.target as HTMLInputElement;
@@ -17,7 +18,7 @@ function fileChosen(event: Event) {
         windowWidth: 1500,
       });
       canvas.getContext('2d').putImageData(imageData, 0, 0);
-      registrationHandling.setImage(index, imageData);
+      registrationHandling.setImage(index, dicomToImageReader(dicom, 0, 1500));
     });
 }
 

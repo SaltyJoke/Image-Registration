@@ -1,6 +1,8 @@
+import ImageReader from "../rendering/interfaces/ImageReader";
+
 export default interface imagePairAndOffset {
-    image1: ImageData,
-    image2: ImageData,
+    image1: ImageReader,
+    image2: ImageReader,
     xOffset: number,
     yOffset: number
 }

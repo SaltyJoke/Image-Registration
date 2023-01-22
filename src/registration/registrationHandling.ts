@@ -2,6 +2,7 @@ import { illustrateResult } from "../rendering/illustrateResult";
 import ImageReader from "../rendering/interfaces/ImageReader";
 import imagePairAndOffset from "./imagePairAndOffset";
 import { meanSquareError } from "./meanSquareError";
+import { optimize } from "./optimize";
 
 const inputs: imagePairAndOffset = {
     image1: null,
@@ -25,6 +26,9 @@ function setOffsets(x: number, y: number) {
 
 function startRegistration() {
     if (!inputs.image1 || !inputs.image2) return;
+    const offset = optimize(inputs.image1, inputs.image2);
+    inputs.xOffset = offset[0];
+    inputs.yOffset = offset[1];
     illustrateResult(inputs);
     document.querySelector('#msqerror').innerHTML = meanSquareError(inputs).toFixed(4);
 }

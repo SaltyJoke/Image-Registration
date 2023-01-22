@@ -36,5 +36,5 @@ export default function subscribeEventHandlers() {
   document.getElementById('choosefile-0').addEventListener('change', fileChosen);
   document.getElementById('choosefile-1').addEventListener('change', fileChosen);
   document.getElementById('button-align').addEventListener('click', registrationHandling.startRegistration);
-  document.addEventListener('mousemove', trackMouse);
+  //document.addEventListener('mousemove', trackMouse);
 }

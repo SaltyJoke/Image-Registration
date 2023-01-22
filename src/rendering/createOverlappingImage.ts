@@ -1,5 +1,4 @@
 import imagePairAndOffset from "../registration/imagePairAndOffset";
-import { createIntensityArray } from "../registration/meanSquareError";
 
 export function createOverlappingImage(args: imagePairAndOffset) {
     const w1 = args.image1.width;

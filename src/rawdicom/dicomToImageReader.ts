@@ -22,7 +22,7 @@ function getIntensityBuffer(dicom: DicomInstance, windowLevel: number, windowWid
   const mapper = new RealWorldValueMapper(dicom);
   for (let i = 0; i < rows * columns; i++) {
     const pixelValue = mapper.toRealWorldValue(pixelData[i]) as number;
-    const brightness = (pixelValue - windowMin) * 255 / windowWidth;
+    const brightness = (pixelValue - windowMin) / windowWidth;
     buffer.push(brightness);
   }
   return buffer;

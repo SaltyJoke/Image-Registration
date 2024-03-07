@@ -17,7 +17,12 @@ function fileChosen(event: Event) {
         windowWidth: 1500,
       });
       canvas.getContext('2d').putImageData(imageData, 0, 0);
-      registrationHandling.setImage(index, imageData);
+      const pixelSpacing = [1.0, 1.0];
+      if (dicom.pixelSpacing) {
+        pixelSpacing[0] = dicom.pixelSpacing[0];
+        pixelSpacing[1] = dicom.pixelSpacing[1];
+      }
+      registrationHandling.setImage(index, imageData, pixelSpacing[0], pixelSpacing[1]);
     });
 }
 
@@ -27,7 +32,9 @@ function getIndexFromId(id: string) {
 }
 
 function trackMouse(event: MouseEvent) {
-  registrationHandling.setOffsets(event.clientX % 200 - 100, event.clientY % 200 - 100);
+  const canvas = document.getElementById('canvas-2');
+  const canvasRect = canvas.getBoundingClientRect();
+  registrationHandling.setOffsets(event.clientX - canvasRect.left, event.clientY - canvasRect.top);
   registrationHandling.startRegistration();
 }
 

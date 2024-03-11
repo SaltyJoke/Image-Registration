@@ -36,9 +36,9 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../../Users/mehrdadnekopour/OpenCV/build/install/lib/release/ -lopencv_world.4.9.0
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../../Users/mehrdadnekopour/OpenCV/build/install/lib/debug/ -lopencv_world.4.9.0
-else:unix: LIBS += -L$$PWD/../../../../../../Users/mehrdadnekopour/OpenCV/build/install/lib/ -lopencv_world.4.9.0
+win32:CONFIG(release, debug|release): LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/release/ -lopencv_world.4.9.0
+else:win32:CONFIG(debug, debug|release): LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/debug/ -lopencv_world.4.9.0
+else:unix: LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/ -lopencv_world.4.9.0
 
-INCLUDEPATH += $$PWD/../../../../../../Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
-DEPENDPATH += $$PWD/../../../../../../Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
+INCLUDEPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
+DEPENDPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4

@@ -8,9 +8,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -39,7 +36,7 @@ void MainWindow::on_btnPreviewImg1_pressed()
 
 void MainWindow::on_btnPreviewImg2_pressed()
 {
-   previewImage(this->ui->txtImg2->text());
+    previewImage(this->ui->txtImg2->text());
 }
 
 void MainWindow::on_btnFeatureBased_pressed()
@@ -105,99 +102,55 @@ void MainWindow::on_btnRegister_pressed()
 // utils -------
 Mat MainWindow::alignImages_FeatureBased(Mat &referenceImage, Mat &targetImage)
 {
-//    // Convert images to grayscale
-//    Mat grayReference, grayTarget;
-//    cvtColor(referenceImage, grayReference, COLOR_BGR2GRAY);
-//    cvtColor(targetImage, grayTarget, COLOR_BGR2GRAY);
-
-//    // Initialize ORB detector and descriptor
-//    Ptr<ORB> orb = ORB::create();
-
-//    // Detect keypoints and compute descriptors
-//    vector<KeyPoint> keypointsReference, keypointsTarget;
-//    Mat descriptorsReference, descriptorsTarget;
-//    orb->detectAndCompute(grayReference, Mat(), keypointsReference, descriptorsReference);
-//    orb->detectAndCompute(grayTarget, Mat(), keypointsTarget, descriptorsTarget);
-
-//    // Match descriptors using Brute-Force Matcher
-//    BFMatcher matcher(NORM_HAMMING);
-//    vector<DMatch> matches;
-//    matcher.match(descriptorsReference, descriptorsTarget, matches);
-
-//    // Filter matches based on distance
-//    double maxDist = 0.2 * sqrt(grayReference.rows * grayReference.rows + grayReference.cols * grayReference.cols);
-//    vector<DMatch> goodMatches;
-//    for (size_t i = 0; i < matches.size(); i++) {
-//        if (matches[i].distance < maxDist) {
-//            goodMatches.push_back(matches[i]);
-//        }
-//    }
-
-//    // Extract matched keypoints
-//    vector<Point2f> matchedPointsReference, matchedPointsTarget;
-//    for (size_t i = 0; i < goodMatches.size(); i++) {
-//        matchedPointsReference.push_back(keypointsReference[goodMatches[i].queryIdx].pt);
-//        matchedPointsTarget.push_back(keypointsTarget[goodMatches[i].trainIdx].pt);
-//    }
-
-//    // Calculate homography matrix using RANSAC
-//    Mat homography = findHomography(matchedPointsTarget, matchedPointsReference, RANSAC);
-
-//    // Warp target image using the calculated homography matrix
-//    Mat registeredImage;
-//    warpPerspective(targetImage, registeredImage, homography, referenceImage.size());
-
-//    return registeredImage;
-
     // Convert images to grayscale
-      Mat grayReference, grayTarget;
-      cvtColor(referenceImage, grayReference, COLOR_BGR2GRAY);
-      cvtColor(targetImage, grayTarget, COLOR_BGR2GRAY);
+    Mat grayReference, grayTarget;
+    cvtColor(referenceImage, grayReference, COLOR_BGR2GRAY);
+    cvtColor(targetImage, grayTarget, COLOR_BGR2GRAY);
 
-      // Initialize SIFT detector and descriptor
-      Ptr<SIFT> sift = SIFT::create();
+    // Initialize SIFT detector and descriptor
+    Ptr<SIFT> sift = SIFT::create();
 
-      // Detect keypoints and compute descriptors
-      vector<KeyPoint> keypointsReference, keypointsTarget;
-      Mat descriptorsReference, descriptorsTarget;
-      sift->detectAndCompute(grayReference, Mat(), keypointsReference, descriptorsReference);
-      sift->detectAndCompute(grayTarget, Mat(), keypointsTarget, descriptorsTarget);
+    // Detect keypoints and compute descriptors
+    vector<KeyPoint> keypointsReference, keypointsTarget;
+    Mat descriptorsReference, descriptorsTarget;
+    sift->detectAndCompute(grayReference, Mat(), keypointsReference, descriptorsReference);
+    sift->detectAndCompute(grayTarget, Mat(), keypointsTarget, descriptorsTarget);
 
-      // Match descriptors
-      BFMatcher matcher(NORM_L2);
-      vector<vector<DMatch>> knnMatches;
-      matcher.knnMatch(descriptorsReference, descriptorsTarget, knnMatches, 2); // k=2 for 2-nearest neighbors
+    // Match descriptors
+    BFMatcher matcher(NORM_L2);
+    vector<vector<DMatch>> knnMatches;
+    matcher.knnMatch(descriptorsReference, descriptorsTarget, knnMatches, 2); // k=2 for 2-nearest neighbors
 
-      // Apply ratio test to filter matches
-      vector<DMatch> goodMatches;
-      for (size_t i = 0; i < knnMatches.size(); i++) {
-          if (knnMatches[i][0].distance < 0.75 * knnMatches[i][1].distance) {
-              goodMatches.push_back(knnMatches[i][0]);
-          }
-      }
+    // Apply ratio test to filter matches
+    vector<DMatch> goodMatches;
+    for (size_t i = 0; i < knnMatches.size(); i++) {
+        if (knnMatches[i][0].distance < 0.75 * knnMatches[i][1].distance) {
+            goodMatches.push_back(knnMatches[i][0]);
+        }
+    }
 
-      // Extract matched keypoints
-      vector<Point2f> matchedPointsReference, matchedPointsTarget;
-      for (size_t i = 0; i < goodMatches.size(); i++) {
-          matchedPointsReference.push_back(keypointsReference[goodMatches[i].queryIdx].pt);
-          matchedPointsTarget.push_back(keypointsTarget[goodMatches[i].trainIdx].pt);
-      }
+    // Extract matched keypoints
+    vector<Point2f> matchedPointsReference, matchedPointsTarget;
+    for (size_t i = 0; i < goodMatches.size(); i++) {
+        matchedPointsReference.push_back(keypointsReference[goodMatches[i].queryIdx].pt);
+        matchedPointsTarget.push_back(keypointsTarget[goodMatches[i].trainIdx].pt);
+    }
 
-      // Compute weights for each match (optional, based on distance)
-      vector<float> weights;
-      for (size_t i = 0; i < goodMatches.size(); i++) {
-          float dist = goodMatches[i].distance;
-          weights.push_back(1.0 / (1.0 + dist)); // Weight = 1 / (1 + distance)
-      }
+    // Compute weights for each match (optional, based on distance)
+    vector<float> weights;
+    for (size_t i = 0; i < goodMatches.size(); i++) {
+        float dist = goodMatches[i].distance;
+        weights.push_back(1.0 / (1.0 + dist)); // Weight = 1 / (1 + distance)
+    }
 
-      // Find homography matrix with weighted points
-      Mat homography = findHomography(matchedPointsTarget, matchedPointsReference, RANSAC, 3.0, weights);
+    // Find homography matrix with weighted points
+    Mat homography = findHomography(matchedPointsTarget, matchedPointsReference, RANSAC, 3.0, weights);
 
-      // Warp target image using homography
-      Mat alignedImage;
-      warpPerspective(targetImage, alignedImage, homography, referenceImage.size());
+    // Warp target image using homography
+    Mat alignedImage;
+    warpPerspective(targetImage, alignedImage, homography, referenceImage.size());
 
-      return alignedImage;
+    return alignedImage;
 }
 
 Mat MainWindow::alignImages_IntensityBased(Mat &sourceImage, Mat &targetImage, int motionModel)
@@ -250,9 +203,9 @@ Mat MainWindow::alignImages_IntensityBased_withROI(Mat &sourceImage, Mat &target
 
     // Perform registration using OpenCV function
     findTransformECC(
-        targetGray, sourceGray, warpMatrix,
-        motionModel, criteria
-    );
+                targetGray, sourceGray, warpMatrix,
+                motionModel, criteria
+                );
 
     // Apply the transformation matrix to the target image
     Mat registeredImage;
@@ -322,12 +275,6 @@ Rect MainWindow::calculateROIs(const Mat& referenceImage, const Mat& targetImage
 void MainWindow::previewImage(QString imageAddress)
 {
     Mat image = imread(imageAddress.toStdString(), IMREAD_COLOR);
-
-
-//    QImage img1 = QImage((uchar *) image.data, image.cols, image.rows, image.step, QImage::Format_RGB888);
-//    ui->imgLabel->setPixmap(QPixmap("/Users/mehrdadnekopour/Desktop/Mehrdad.jpg"));
-//    ui->imgLabel->show();
-
     imshow(QString(imageAddress.split('/').last()).toStdString(), image);
 }
 

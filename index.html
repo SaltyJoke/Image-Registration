@@ -34,11 +34,11 @@
         <tr>
             <th>
                 <p>First DICOM image</p>
-                <input type="file" id="choosefile-0" accept=".dcm" />
+                <input type="file" id="choosefile-0" accept=".dcm,.bin" />
             </th>
             <th>
                 <p>Second DICOM image</p>
-                <input type="file" id="choosefile-1" accept=".dcm" />
+                <input type="file" id="choosefile-1" accept=".dcm,.bin" />
             </th>
         </tr>
         <tr>
@@ -47,6 +47,18 @@
             </th>
             <th>
                 <canvas id="canvas-1" width="40" height="40"></canvas>
+            </th>
+        </tr>
+        <tr>
+            <th>
+                <label id="imageRes-0" for="button-savecanvas-0"></label>
+                <label id="imageScale-0" for="button-savecanvas-0"></label>
+                <button id="button-savecanvas-0" type="button">Save canvas to bin</button>
+            </th>
+            <th>
+                <label id="imageRes-1" for="button-savecanvas-1"></label>
+                <label id="imageScale-1" for="button-savecanvas-0"></label>
+                <button id="button-savecanvas-1" type="button">Save canvas to bin</button>
             </th>
         </tr>
     </table>

@@ -28,10 +28,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+#    registration_engine.cpp \
+    image_utils.cpp \
+    engine.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+#    registration_engine.h \
+    alignable.h \
+    image_utils.h \
+    engine.h
 
 FORMS += \
         mainwindow.ui

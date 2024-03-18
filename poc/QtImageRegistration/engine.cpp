@@ -27,6 +27,23 @@ Engine::Engine(QObject *parent, QString referenceImageAddress, QString targetIma
     this->m_targetImage(targetImage);
 }
 
+Engine::Engine(QObject *parent, QByteArray imageData1, QByteArray imageData2) : QObject(parent)
+{
+    // Decode the image data using OpenCV
+    cv::Mat image1(imageData1.size(), 1, CV_8UC1, (void*)imageData1.data());
+    cv::Mat image2(imageData2.size(), 1, CV_8UC1, (void*)imageData2.data());
+
+
+
+    if (image1.empty() || image2.empty()) {
+        QMessageBox::warning(nullptr, "Error", "Error in reading images");
+        return;
+    }
+
+    this->m_referenceImage = image1;
+    this->m_targetImage = image2;
+}
+
 Engine::Engine(QObject *parent, const Mat &referenceImage, const Mat &targetImage) : QObject(parent), m_referenceImage(referenceImage), m_targetImage(targetImage)
 {
 
@@ -97,6 +114,7 @@ Mat Engine::align_featureBased()
     Mat alignedImage;
     warpPerspective(this->m_targetImage, alignedImage, homography, this->m_referenceImage.size());
 
+    // return homography for the api
     return alignedImage;
 }
 
@@ -126,4 +144,15 @@ Mat Engine::align_intensityBased()
     warpAffine(this->m_targetImage, alignedImage, warpMatrix, this->m_referenceImage.size()); // Use sourceImage.size() as output size
 
     return alignedImage;
+
+    //////  To compare the output with these 2 approaches
+    //////  Find ROIs for both reference and target images
+    //////  Find the common ROI between reference and target images
+    ////    Rect commonROI = calculateROIs(referenceImage, targetImage);
+    ////    Mat alignedImage_WithROI = alignImages_IntensityBased_withROI(referenceImage, targetImage, MOTION_TRANSLATION, commonROI);
+    ////    Mat resultWithROI = referenceImage.clone();
+    ////    addWeighted(referenceImage, 0.5, alignedImage_WithROI, 0.5, 0, resultWithROI);
+    ////    QString outFileName_roi = "/Users/mehrdadnekopour/Desktop/aligned-ib-roi.JPG";
+    ////    imwrite(outFileName_roi.toStdString(), resultWithROI);
+    ////    imshow(outFileName_roi.toStdString(), resultWithROI);
 }

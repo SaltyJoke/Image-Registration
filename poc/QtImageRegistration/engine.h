@@ -10,6 +10,8 @@
 #include "image_utils.h"
 
 
+using namespace cv;
+
 class Engine : public QObject, public Alignable
 {
     Q_OBJECT
@@ -19,6 +21,7 @@ class Engine : public QObject, public Alignable
 public:
 
     explicit Engine(QObject *parent = nullptr, QString referenceImageAddress = QString(), QString targetImageAddress = QString());
+    explicit Engine(QObject *parent = nullptr, QByteArray imageData1 = QByteArray(), QByteArray  imageData2 = QByteArray());
     explicit Engine(QObject *parent = nullptr, const Mat& referenceImage = Mat(), const Mat& targetImage = Mat());
 
     Mat referenceImage() const;

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,14 +31,16 @@ SOURCES += \
         mainwindow.cpp \
 #    registration_engine.cpp \
     image_utils.cpp \
-    engine.cpp
+    engine.cpp \
+    server.cpp
 
 HEADERS += \
         mainwindow.h \
 #    registration_engine.h \
     alignable.h \
     image_utils.h \
-    engine.h
+    engine.h \
+    server.h
 
 FORMS += \
         mainwindow.ui

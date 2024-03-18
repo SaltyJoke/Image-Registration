@@ -1,9 +1,34 @@
 # Prerequisites
 
-- Qt 5.10
-- OpenCV - Compiled libraries to replace the library's path into the projects .pro file,
+- [Qt 5.14.2](https://download.qt.io/new_archive/qt/5.14/5.14.2)
+- [OpenCV](https://opencv.org) - Compiled libraries to replace the library's path into the projects .pro file,
+- [CMake v3](https://cmake.org/download/) download for your os from latest versions section
 
-# Engine Class Documentation
+# Setup and running:
+
+- Create a new folder named opencv in the root of your C drive and Extract opencv zip file in there
+- Inside C:/opencv folder create a new folder named _build_
+- Open CMAke, Choose C:/opencv as the source path, and C:/opencv/build as the target folder to build the library
+- Press the configure button, it will take a while to configure the build
+- In the text field in the middle, find and checkmark BUILD_opencv_world.
+- In the same place, find CMAKE_INSTALL_PREFIX and change its path to C:/opencv/build/install
+- Press the configure button again
+- Press on Generate button
+- Close CMake, Navigate to C:/opencv/build folder in your terminal and run: _make_ command, it will take a while
+- Then, run _make install_
+- Open QT project using the .pro file in the root of project
+- Comment out these lines
+
+win32:CONFIG(release, debug|release): LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/release/ -lopencv_world.4.9.0
+else:win32:CONFIG(debug, debug|release): LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/debug/ -lopencv_world.4.9.0
+else:unix: LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/ -lopencv_world.4.9.0
+
+INCLUDEPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
+DEPENDPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
+
+- Then right click and press on _Add Library_ item
+- Choose External Library
+- Add the built library from this path in C:/opencv/build/install/include/opencv4
 
 ## Overview
 

@@ -6,7 +6,7 @@
 # Download URL
 - Download URLs of series (DICOM files) from the Cancer Imaging Archive (TCIA)
 - Orientation is Axial
-- TCIA Subhect ID has two series as prior and current
+- TCIA Subject ID has two series as prior and current
 
 | Subject ID | Series Date | URL |
 | - | - | - |

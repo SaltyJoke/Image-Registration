@@ -71,14 +71,12 @@ function trackMouse(event: MouseEvent) {
   registrationHandling.startRegistration();
 }
 
-function saveCanvas(index) {
-  const canvas = document.getElementById(`canvas-${index}`) as HTMLCanvasElement;
 
+function getNormalizedImage(canvas, xScale, yScale) {
   const canvasToSave = document.createElement('canvas');
-  const scales = document.getElementById(`imageScale-${index}`).innerHTML.split(',');
-  canvasToSave.width = canvas.width * parseFloat(scales[0]);
-  canvasToSave.height = canvas.height * parseFloat(scales[1]);
-  canvasToSave.getContext('2d').scale(parseFloat(scales[0]), parseFloat(scales[1]));
+  canvasToSave.width = canvas.width * xScale;
+  canvasToSave.height = canvas.height * yScale;
+  canvasToSave.getContext('2d').scale(xScale, yScale);
   canvasToSave.getContext('2d').drawImage(canvas, 0, 0);
   const imageDataToSave = canvasToSave.getContext('2d').getImageData(0, 0, canvasToSave.width, canvasToSave.height);
   const buffer = new ArrayBuffer(imageDataToSave.data.length);
@@ -88,9 +86,13 @@ function saveCanvas(index) {
     dataView.setUint8(i, imageDataToSave.data[i]);
   }
 
-  const blob = new Blob([buffer]);
+  return { buffer, width: canvasToSave.width, height: canvasToSave.height };
+}
+
+function saveBinaryImage(image, filenamePrefix) {
+  const blob = new Blob([image.buffer]);
   const url = URL.createObjectURL(blob);
-  const filename = `canvas_${index}_${canvasToSave.width}_${canvasToSave.height}.bin`;
+  const filename = `${filenamePrefix}_${image.width}_${image.height}.bin`;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
@@ -98,17 +100,88 @@ function saveCanvas(index) {
   URL.revokeObjectURL(url);
 }
 
+function saveCanvas(canvas, xScale, yScale, filenamePrefix) {
+  const image = getNormalizedImage(canvas, xScale, yScale);
+  saveBinaryImage(image, filenamePrefix);
+}
+
 function saveCanvas0(event: Event) {
-  saveCanvas(0);
+  const index = 0;
+  const canvas = document.getElementById(`canvas-${index}`) as HTMLCanvasElement;
+  const scales = document.getElementById(`imageScale-${index}`).innerHTML.split(',');
+  const filenamePrefix = `canvas_${index}`;
+  saveCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]), filenamePrefix);
 }
 function saveCanvas1(event: Event) {
-  saveCanvas(1);
+  const index = 1;
+  const canvas = document.getElementById(`canvas-${index}`) as HTMLCanvasElement;
+  const scales = document.getElementById(`imageScale-${index}`).innerHTML.split(',');
+  const filenamePrefix = `canvas_${index}`;
+  saveCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]), filenamePrefix);
+}
+
+function loadNormalizedImage(file) {
+  return new Promise((resolve, reject) => {
+    readDicomFile(file)
+    .then((dicom: DicomInstance) => {
+      const canvas = document.createElement('canvas');
+      const imageData = dicomToCanvas({
+        dicom,
+        canvas,
+        windowLevel: 0,
+        windowWidth: 1500,
+      });
+      canvas.getContext('2d').putImageData(imageData, 0, 0);
+      const pixelSpacing = [1.0, 1.0];
+      if (dicom.pixelSpacing) {
+        pixelSpacing[0] = dicom.pixelSpacing[0];
+        pixelSpacing[1] = dicom.pixelSpacing[1];
+      }
+      resolve(getNormalizedImage(canvas, pixelSpacing[0], pixelSpacing[1]));
+    });
+  });
+}
+
+function startBatchTest(event: Event) {
+  const fileSelector = event.target as HTMLInputElement;
+  const files = fileSelector.files;
+  if (!files) return;
+
+  const folderPaths: { [key: string]: File[] } = {};
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.webkitRelativePath && file.name.endsWith('.dcm')) {
+      const folderPath = file.webkitRelativePath.split('/').slice(0, -1).join('/');
+      if (!folderPaths[folderPath]) {
+        folderPaths[folderPath] = [];
+      }
+      folderPaths[folderPath].push(file);
+    }
+  }
+
+  // if 2 .dcm exist in same folder
+  for (const folderPath in folderPaths) {
+    if (folderPaths[folderPath].length === 2) {
+      const promises = [];
+      for (const file of folderPaths[folderPath]) {
+        promises.push(loadNormalizedImage(file));
+      }
+      Promise.all(promises)
+      .then(results => {
+        const filenamePrefix1 = `${folderPaths[folderPath][0].name.substring(0, folderPaths[folderPath][0].name.lastIndexOf('.'))}`;
+        saveBinaryImage(results[0], filenamePrefix1);
+        const filenamePrefix2 = `${folderPaths[folderPath][1].name.substring(0, folderPaths[folderPath][1].name.lastIndexOf('.'))}`;
+        saveBinaryImage(results[1], filenamePrefix2);
+      });
+    }
+  }
 }
 
 export default function subscribeEventHandlers() {
   document.getElementById('choosefile-0').addEventListener('change', fileChosen);
   document.getElementById('choosefile-1').addEventListener('change', fileChosen);
   document.getElementById('button-align').addEventListener('click', registrationHandling.startRegistration);
+  document.getElementById('button-batch').addEventListener('change', startBatchTest);
   document.addEventListener('mousemove', trackMouse);
   document.getElementById('button-savecanvas-0').addEventListener('click', saveCanvas0);
   document.getElementById('button-savecanvas-1').addEventListener('click', saveCanvas1);

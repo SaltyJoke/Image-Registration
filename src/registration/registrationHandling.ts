@@ -34,11 +34,11 @@ function setOffsets(x: number, y: number) {
     inputs.yOffset = y;
 }
 
-function startRegistration() {
+function drawImages(canvas: HTMLCanvasElement, msqElement: HTMLElement) {
     if (!inputs.image1 || !inputs.image2) return;
-    illustrateResult(inputs);
-    document.querySelector('#msqerror').innerHTML = meanSquareError(inputs).toFixed(4);
+    illustrateResult(inputs, canvas);
+    msqElement.innerHTML = meanSquareError(inputs).toFixed(4);
 }
 
-const registrationHandling = {setImage, setOffsets, startRegistration};
+const registrationHandling = {setImage, setOffsets, drawImages};
 export default registrationHandling;

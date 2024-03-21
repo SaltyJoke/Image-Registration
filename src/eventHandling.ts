@@ -81,13 +81,13 @@ function getIndexFromId(id: string) {
 }
 
 function trackMouse(event: MouseEvent) {
-  const canvas = document.getElementById('canvas-2');
+  const canvas = document.getElementById('canvas-preview') as HTMLCanvasElement;;
   const canvasRect = canvas.getBoundingClientRect();
   registrationHandling.setOffsets(
     event.clientX - canvasRect.left,
     event.clientY - canvasRect.top
   );
-  registrationHandling.startRegistration();
+  registrationHandling.drawImages(canvas, document.querySelector('#msqerror-preview') as HTMLElement);
 }
 
 function saveCanvas(index: Number) {
@@ -155,6 +155,29 @@ function prepareAndSendAlignRequest() {
   requestAlignImages(payload);
 }
 
+function startRegistration() {
+  const canvas = document.getElementById('canvas-align') as HTMLCanvasElement;
+  registrationHandling.drawImages(canvas, document.querySelector('#msqerror-align') as HTMLElement);
+}
+
+function startBatchTest(event: Event) {
+  const fileSelector = event.target as HTMLInputElement;
+  const files = fileSelector.files;
+  if (!files) return;
+
+  const folderPaths: { [key: string]: File[] } = {};
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.webkitRelativePath && file.name.endsWith('.dcm')) {
+      const folderPath = file.webkitRelativePath.split('/').slice(0, -1).join('/');
+      if (!folderPaths[folderPath]) {
+        folderPaths[folderPath] = [];
+      }
+      folderPaths[folderPath].push(file);
+    }
+  }
+}
+
 export default function subscribeEventHandlers() {
   document
     .getElementById('choosefile-0')
@@ -163,11 +186,11 @@ export default function subscribeEventHandlers() {
     .getElementById('choosefile-1')
     .addEventListener('change', fileChosen);
   document
-    .getElementById('button-align')
-    .addEventListener('click', registrationHandling.startRegistration);
-  document
     .getElementById('button-send-align-request')
     .addEventListener('click', prepareAndSendAlignRequest);
+  document
+    .getElementById('button-batch')
+    .addEventListener('change', startBatchTest);
   document.addEventListener('mousemove', trackMouse);
   document
     .getElementById('button-savecanvas-0')

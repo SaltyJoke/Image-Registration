@@ -40,6 +40,9 @@
                 <p>Second DICOM image</p>
                 <input type="file" id="choosefile-1" accept=".dcm,.bin" />
             </th>
+            <th>
+                <p>Preview image</p>
+            </th>
         </tr>
         <tr>
             <th>
@@ -47,6 +50,9 @@
             </th>
             <th>
                 <canvas id="canvas-1" width="40" height="40"></canvas>
+            </th>
+            <th>
+                <canvas id="canvas-preview" width="40" height="40"></canvas>
             </th>
         </tr>
         <tr>
@@ -60,12 +66,15 @@
                 <label id="imageScale-1" for="button-savecanvas-0"></label>
                 <button id="button-savecanvas-1" type="button">Save canvas to bin</button>
             </th>
+            <th>
+                <div id="msqerror-preview"></div>
+            </th>
         </tr>
     </table>
     <button id="button-align">Align images</button>
     <br>
-    <canvas id="canvas-2" width="40" height="40"></canvas>
-    <div id="msqerror"></div>
+    <canvas id="canvas-align" width="40" height="40"></canvas>
+    <div id="msqerror-align"></div>
     <br>
     <p>Batch Test</p>
     <input type="file" id="button-batch" webkitdirectory>

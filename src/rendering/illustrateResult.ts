@@ -1,12 +1,11 @@
 import imagePairAndOffset from "../registration/imagePairAndOffset";
 import { createOverlappingImage } from "./createOverlappingImage";
 
-export function illustrateResult(args: imagePairAndOffset) {
+export function illustrateResult(args: imagePairAndOffset, canvas: HTMLCanvasElement) {
     if (!args.image1.data || !args.image2.data) {
         return;
     }
 
-    const canvas = document.getElementById(`canvas-2`) as HTMLCanvasElement;
     canvas.width = args.image1.data.width;
     canvas.height = args.image1.data.height;
     const context = canvas.getContext('2d');

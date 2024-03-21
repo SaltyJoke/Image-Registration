@@ -65,10 +65,10 @@ function getIndexFromId(id: string) {
 }
 
 function trackMouse(event: MouseEvent) {
-  const canvas = document.getElementById('canvas-2');
+  const canvas = document.getElementById('canvas-preview') as HTMLCanvasElement;;
   const canvasRect = canvas.getBoundingClientRect();
   registrationHandling.setOffsets(event.clientX - canvasRect.left, event.clientY - canvasRect.top);
-  registrationHandling.startRegistration();
+  registrationHandling.drawImages(canvas, document.querySelector('#msqerror-preview') as HTMLElement);
 }
 
 
@@ -142,6 +142,11 @@ function loadNormalizedImage(file) {
   });
 }
 
+function startRegistration() {
+  const canvas = document.getElementById('canvas-align') as HTMLCanvasElement;
+  registrationHandling.drawImages(canvas, document.querySelector('#msqerror-align') as HTMLElement);
+}
+
 function startBatchTest(event: Event) {
   const fileSelector = event.target as HTMLInputElement;
   const files = fileSelector.files;
@@ -180,7 +185,7 @@ function startBatchTest(event: Event) {
 export default function subscribeEventHandlers() {
   document.getElementById('choosefile-0').addEventListener('change', fileChosen);
   document.getElementById('choosefile-1').addEventListener('change', fileChosen);
-  document.getElementById('button-align').addEventListener('click', registrationHandling.startRegistration);
+  document.getElementById('button-align').addEventListener('click', startRegistration);
   document.getElementById('button-batch').addEventListener('change', startBatchTest);
   document.addEventListener('mousemove', trackMouse);
   document.getElementById('button-savecanvas-0').addEventListener('click', saveCanvas0);

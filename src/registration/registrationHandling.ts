@@ -30,15 +30,15 @@ function setImage(index: number, im: ImageData, xScale: number, yScale: number) 
 }
 
 function setOffsets(x: number, y: number) {
-    inputs.xOffset = x;
-    inputs.yOffset = y;
+    inputs.mat[0][2] = x;
+    inputs.mat[1][2] = y;
 }
 
-function startRegistration() {
+function drawImages(canvas: HTMLCanvasElement, msqElement: HTMLElement) {
     if (!inputs.image1 || !inputs.image2) return;
-    illustrateResult(inputs);
-    document.querySelector('#msqerror').innerHTML = meanSquareError(inputs).toFixed(4);
+    illustrateResult(inputs, canvas);
+    msqElement.innerHTML = meanSquareError(inputs).toFixed(4);
 }
 
-const registrationHandling = {setImage, setOffsets, startRegistration};
+const registrationHandling = {setImage, setOffsets, drawImages};
 export default registrationHandling;

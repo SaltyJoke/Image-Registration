@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/SaltyJoke/Image-Registration#readme",
   "dependencies": {
+    "axios": "^1.6.8",
     "http-server": "^14.1.1",
     "typescript": "^4.9.4"
   },

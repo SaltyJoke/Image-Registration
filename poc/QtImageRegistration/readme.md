@@ -6,6 +6,7 @@
 
 # Setup and running:
 
+## Setup OpenCV (MacOS)
 - Create a new folder named opencv in the root of your C drive and Extract opencv zip file in there
 - Inside C:/opencv folder create a new folder named _build_
 - Open CMAke, Choose C:/opencv as the source path, and C:/opencv/build as the target folder to build the library
@@ -16,6 +17,17 @@
 - Press on Generate button
 - Close CMake, Navigate to C:/opencv/build folder in your terminal and run: _make_ command, it will take a while
 - Then, run _make install_
+- Continue to **Set path of OpenCV in Qt project**
+
+## Setup OpenCV (Windows)
+- Create a new folder named opencv in the root of your C drive and Extract opencv zip file in there
+- The include file is installed under c:/opencv/build/include,
+  the library files are installed under c:/opencv/build/x64/vc16/bin and lib
+- Go to C:/opencv/build and run setup_vars_opencv4.cmd
+- Continue to **Set path of OpenCV in Qt project**
+
+## Set path of OpenCV in Qt project
+
 - Open QT project using the .pro file in the root of project
 - Comment out these lines
 
@@ -30,6 +42,14 @@ DEPENDPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
 - Choose External Library
 - Add the built library from this path in C:/opencv/build/install/include/opencv4
 
+## Troubleshoot when build Qt project on Windows
+If you get "NK1158: cannot run 'rc.exe'",
+
+Open build env by pushing project setting
+
+add C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64 to Path
+
+# Design
 ## Overview
 
 The `Engine` class is a core component of the image registration functionality in the Qt C++ application. It provides methods to align two images based on different algorithms: feature-based alignment and intensity-based alignment. This class inherits from both `QObject` and `Alignable`, allowing it to emit signals and implement alignment functionality, respectively.

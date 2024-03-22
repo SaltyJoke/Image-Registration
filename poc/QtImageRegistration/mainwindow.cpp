@@ -10,11 +10,29 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    this->m_server = new Server(this);
+
+    connect(this->m_server, &Server::newRequestReceived, this, &MainWindow::handleRequestReceived);
+
+    int port = 8989;
+    this->m_server->startServer(port);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::handleRequestReceived(const QByteArray &request)
+{
+    // Process the received request here
+//    qDebug() << "Received request:" << request;
+    this->ui->txtLogs->appendPlainText(request);
+    this->ui->txtLogs->appendPlainText("-----");
+
+//    QJsonObject responseObject = this->m_server->processRequest(request);
+
 }
 
 void MainWindow::on_txtImg1_returnPressed()

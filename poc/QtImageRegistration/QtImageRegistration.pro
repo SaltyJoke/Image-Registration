@@ -29,18 +29,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-#    registration_engine.cpp \
-    image_utils.cpp \
-    engine.cpp \
-    server.cpp
+        image_utils.cpp \
+        engine.cpp \
+        server.cpp
 
 HEADERS += \
         mainwindow.h \
-#    registration_engine.h \
-    alignable.h \
-    image_utils.h \
-    engine.h \
-    server.h
+        alignable.h \
+        image_utils.h \
+        engine.h \
+        server.h
 
 FORMS += \
         mainwindow.ui
@@ -51,3 +49,5 @@ else:unix: LIBS += -L/Users/mehrdadnekopour/OpenCV/build/install/lib/ -lopencv_w
 
 INCLUDEPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
 DEPENDPATH += /Users/mehrdadnekopour/OpenCV/build/install/include/opencv4
+
+

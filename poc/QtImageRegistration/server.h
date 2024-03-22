@@ -15,18 +15,28 @@ public:
     explicit Server(QObject *parent = nullptr);
     ~Server();
 
+    void startServer(int port);
+
+    QJsonObject processRequest(const QByteArray &request);
+
 protected:
     void incomingConnection(qintptr socketDescriptor) override;
 
 private slots:
-    void readRequest();
-    QJsonObject processRequest(const QJsonDocument &requestData);
-    QJsonObject handleGetRequest(const QJsonObject &requestData);
+
+    bool isPreflightRequest(const QByteArray &request);
+    void handlePreflightRequest();
+
+
+    QJsonObject handleGetRequest(QString path, const QJsonObject &requestData);
     QJsonObject handleAlignRequest(const QJsonObject &requestData);
-    QJsonObject handlePostRequest(const QJsonObject &requestData);
+    QJsonObject handlePostRequest(QString path, const QJsonObject &requestData);
 
 signals:
-    void requestReceived(const QByteArray &request);
+    void newRequestReceived(const QByteArray &request);
+
+public slots:
+    void sendData(const QByteArray &data);
 };
 
 #endif // SERVER_H

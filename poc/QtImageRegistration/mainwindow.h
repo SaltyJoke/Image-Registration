@@ -7,6 +7,7 @@
 #include "engine.h"
 #include "alignable.h"
 #include "image_utils.h"
+#include "server.h"
 
 using namespace std;
 using namespace cv;
@@ -23,12 +24,16 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    Server *m_server;
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 
 private slots:
+    void handleRequestReceived(const QByteArray &request);
+
     void on_txtImg1_returnPressed();
     void on_txtImg2_returnPressed();
 

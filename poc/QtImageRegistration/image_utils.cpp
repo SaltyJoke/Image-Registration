@@ -66,6 +66,17 @@ Mat ImageUtils::readFromBinary(QString filePath)
         return image; // Return empty Mat if failed to open file
     }
 
+    // Read the width and height from the file
+    int width, height;
+    if (file.read(reinterpret_cast<char*>(&width), sizeof(int)) != sizeof(int)) {
+        qDebug() << "Error reading width.";
+        file.close();
+    }
+    if (file.read(reinterpret_cast<char*>(&height), sizeof(int)) != sizeof(int)) {
+        qDebug() << "Error reading height.";
+        file.close();
+    }
+
     // Read the binary data from the file
     QByteArray imageData = file.readAll();
     file.close();
@@ -78,6 +89,11 @@ Mat ImageUtils::readFromBinary(QString filePath)
 
     if (image.empty()) {
         qDebug() << "Failed to decode the image from file: " << filePath;
+    }
+
+    // Ensure that the size matches the provided width and height
+    if (image.cols != width || image.rows != height) {
+        qDebug() << "Error: Image dimensions do not match the provided width and height.";
     }
 
     return image;

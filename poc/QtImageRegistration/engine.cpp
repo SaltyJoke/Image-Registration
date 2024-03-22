@@ -109,13 +109,12 @@ Mat Engine::align_featureBased()
 
     // Find homography matrix with weighted points
     Mat homography = findHomography(matchedPointsTarget, matchedPointsReference, RANSAC, 3.0, weights);
+    return homography;
 
-    // Warp target image using homography
-    Mat alignedImage;
-    warpPerspective(this->m_targetImage, alignedImage, homography, this->m_referenceImage.size());
-
-    // return homography for the api
-    return alignedImage;
+    // Warp target image using homography // uncomment if you want to preview
+    //    Mat alignedImage;
+    //    warpPerspective(this->m_targetImage, alignedImage, homography, this->m_referenceImage.size());
+    //    return alignedImage;
 }
 
 Mat Engine::align_intensityBased()

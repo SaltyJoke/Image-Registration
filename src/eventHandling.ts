@@ -90,11 +90,9 @@ function trackMouse(event: MouseEvent) {
   registrationHandling.drawImages(canvas, document.querySelector('#msqerror-preview') as HTMLElement);
 }
 
-function saveCanvas(index: Number) {
-  const { blob, canvasToSave } = prepareBlobFromCanvas(index);
-
+function saveBlobImage(blob, width, height, filenamePrefix) {
   const url = URL.createObjectURL(blob);
-  const filename = `canvas_${index}_${canvasToSave.width}_${canvasToSave.height}.bin`;
+  const filename = `${filenamePrefix}_${width}_${height}.bin`;
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
@@ -102,23 +100,19 @@ function saveCanvas(index: Number) {
   URL.revokeObjectURL(url);
 }
 
-function prepareBlobFromCanvas(index: Number): {
+function saveCanvas(canvas, xScale, yScale, filenamePrefix) {
+  const { blob, canvasToSave } = prepareBlobFromCanvas(canvas, xScale, yScale);
+  saveBlobImage(blob, canvasToSave.width, canvasToSave.height, filenamePrefix);
+}
+
+function prepareBlobFromCanvas(canvas, xScale, yScale): {
   blob: Blob;
   canvasToSave: HTMLCanvasElement;
 } {
-  const canvas = document.getElementById(
-    `canvas-${index}`
-  ) as HTMLCanvasElement;
-
   const canvasToSave = document.createElement('canvas');
-  const scales = document
-    .getElementById(`imageScale-${index}`)
-    .innerHTML.split(',');
-  canvasToSave.width = canvas.width * parseFloat(scales[0]);
-  canvasToSave.height = canvas.height * parseFloat(scales[1]);
-  canvasToSave
-    .getContext('2d')
-    .scale(parseFloat(scales[0]), parseFloat(scales[1]));
+  canvasToSave.width = canvas.width * xScale;
+  canvasToSave.height = canvas.height * yScale;
+  canvasToSave.getContext('2d').scale(xScale, yScale);
   canvasToSave.getContext('2d').drawImage(canvas, 0, 0);
   const imageDataToSave = canvasToSave
     .getContext('2d')
@@ -132,19 +126,31 @@ function prepareBlobFromCanvas(index: Number): {
 
   const blob = new Blob([buffer]);
 
-  return { blob, canvasToSave };
-}
+  return { blob, canvasToSave };}
 
 function saveCanvas0(event: Event) {
-  saveCanvas(0);
+  const index = 0;
+  const canvas = document.getElementById(`canvas-${index}`) as HTMLCanvasElement;
+  const scales = document.getElementById(`imageScale-${index}`).innerHTML.split(',');
+  const filenamePrefix = `canvas_${index}`;
+  saveCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]), filenamePrefix);
 }
+
 function saveCanvas1(event: Event) {
-  saveCanvas(1);
+  const index = 1;
+  const canvas = document.getElementById(`canvas-${index}`) as HTMLCanvasElement;
+  const scales = document.getElementById(`imageScale-${index}`).innerHTML.split(',');
+  const filenamePrefix = `canvas_${index}`;
+  saveCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]), filenamePrefix);
 }
 
 function prepareAndSendAlignRequest() {
-  const { blob: blob0, canvasToSave: canvas0 } = prepareBlobFromCanvas(0);
-  const { blob: blob1, canvasToSave: canvas1 } = prepareBlobFromCanvas(1);
+  let canvas = document.getElementById('canvas-0') as HTMLCanvasElement;
+  let scales = document.getElementById('imageScale-0').innerHTML.split(',');
+  const { blob: blob0, canvasToSave: canvas0 } = prepareBlobFromCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]));
+  canvas = document.getElementById('canvas-1') as HTMLCanvasElement;
+  scales = document.getElementById('imageScale-1').innerHTML.split(',');
+  const { blob: blob1, canvasToSave: canvas1 } = prepareBlobFromCanvas(canvas, parseFloat(scales[0]), parseFloat(scales[1]));
 
   const payload = {
     image1: canvas0.toDataURL('image/png'),
@@ -158,6 +164,28 @@ function prepareAndSendAlignRequest() {
 function startRegistration() {
   const canvas = document.getElementById('canvas-align') as HTMLCanvasElement;
   registrationHandling.drawImages(canvas, document.querySelector('#msqerror-align') as HTMLElement);
+}
+
+function prepareBlobFromFile(file) {
+  return new Promise((resolve, reject) => {
+    readDicomFile(file)
+    .then((dicom: DicomInstance) => {
+      const canvas = document.createElement('canvas');
+      const imageData = dicomToCanvas({
+        dicom,
+        canvas,
+        windowLevel: 0,
+        windowWidth: 1500,
+      });
+      canvas.getContext('2d').putImageData(imageData, 0, 0);
+      const pixelSpacing = [1.0, 1.0];
+      if (dicom.pixelSpacing) {
+        pixelSpacing[0] = dicom.pixelSpacing[0];
+        pixelSpacing[1] = dicom.pixelSpacing[1];
+      }
+      resolve(prepareBlobFromCanvas(canvas, pixelSpacing[0], pixelSpacing[1]));
+    });
+  });
 }
 
 function startBatchTest(event: Event) {
@@ -174,6 +202,23 @@ function startBatchTest(event: Event) {
         folderPaths[folderPath] = [];
       }
       folderPaths[folderPath].push(file);
+    }
+  }
+
+  // if 2 .dcm exist in same folder
+  for (const folderPath in folderPaths) {
+    if (folderPaths[folderPath].length === 2) {
+      const promises = [];
+      for (const file of folderPaths[folderPath]) {
+        promises.push(prepareBlobFromFile(file));
+      }
+      Promise.all(promises)
+      .then(results => {
+        const filenamePrefix1 = `${folderPaths[folderPath][0].name.substring(0, folderPaths[folderPath][0].name.lastIndexOf('.'))}`;
+        saveBlobImage(results[0].blob, results[0].canvasToSave.width, results[0].canvasToSave.height, filenamePrefix1);
+        const filenamePrefix2 = `${folderPaths[folderPath][1].name.substring(0, folderPaths[folderPath][1].name.lastIndexOf('.'))}`;
+        saveBlobImage(results[1].blob, results[1].canvasToSave.width, results[1].canvasToSave.height, filenamePrefix1);
+      });
     }
   }
 }

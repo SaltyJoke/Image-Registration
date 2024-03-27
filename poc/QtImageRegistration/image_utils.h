@@ -10,8 +10,9 @@ using namespace std;
 class ImageUtils {
 public:
     static void showImage(QString imageAddress);
+    static void showImage(const Mat &image, QString title);
     static Mat readImage(QString filePath);
-    static void previewResult(Mat &image, Mat &overlayImage, QString outputPath = QString());
+    static void previewResult(const Mat &image, const Mat &overlayImage, QString outputPath = QString());
 
 private:
     static Mat readFromBinary(QString filePath);

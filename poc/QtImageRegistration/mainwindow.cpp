@@ -90,24 +90,24 @@ void MainWindow::on_btnFeatureBased_pressed()
 
 void MainWindow::on_btnIntensityBased_pressed()
 {
-    try {
-        Mat referenceImage = ImageUtils::readImage(this->ui->txtImg1->text());
-        Mat targetImage = ImageUtils::readImage(this->ui->txtImg2->text());
+//    try {
+//        Mat referenceImage = ImageUtils::readImage(this->ui->txtImg1->text());
+//        Mat targetImage = ImageUtils::readImage(this->ui->txtImg2->text());
 
-        if (referenceImage.empty() || targetImage.empty()) {
-            QMessageBox::warning(nullptr, "Error", "Error in readin images");
-            return;
-        }
+//        if (referenceImage.empty() || targetImage.empty()) {
+//            QMessageBox::warning(nullptr, "Error", "Error in readin images");
+//            return;
+//        }
 
-        Engine* registrationEngine = new Engine(this, referenceImage, targetImage);
+//        Engine* registrationEngine = new Engine(this, referenceImage, targetImage);
 
-        Mat alignedImage = registrationEngine->align(Alignable::AlignmentAlgorithms::INTENSITY_BASED);
-        ImageUtils::previewResult(referenceImage, alignedImage);
+//        Mat alignedImage = registrationEngine->align(Alignable::AlignmentAlgorithms::INTENSITY_BASED);
+//        ImageUtils::previewResult(referenceImage, alignedImage);
 
-    } catch (const std::exception &e) {
-        qDebug() << "Exception occurred: " << e.what();
-        QMessageBox::warning(nullptr, "Error", e.what());
-    }
+//    } catch (const std::exception &e) {
+//        qDebug() << "Exception occurred: " << e.what();
+//        QMessageBox::warning(nullptr, "Error", e.what());
+//    }
 
 }
 

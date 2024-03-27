@@ -10,7 +10,16 @@ void ImageUtils::showImage(QString imageAddress) {
     Mat image = readImage(imageAddress);
 
     if (!image.empty()) {
-        string windowName = QString(imageAddress.split('/').last()).toStdString();
+        ImageUtils::showImage(image, QString(imageAddress.split('/').last()));
+    } else {
+        QMessageBox::warning(nullptr, "Error", "Image is empty! showImage");
+    }
+}
+
+void ImageUtils::showImage(const Mat &image, QString title)
+{
+    if (!image.empty()) {
+        string windowName = title.toStdString();
         namedWindow(windowName, WINDOW_GUI_EXPANDED);
         imshow(windowName, image);
     } else {
@@ -37,7 +46,7 @@ Mat ImageUtils::readImage(QString filePath)
     return image;
 }
 
-void ImageUtils::previewResult(Mat &image, Mat &overlayImage, QString outputPath)
+void ImageUtils::previewResult(const Mat &image, const Mat &overlayImage, QString outputPath)
 {
     // Overlay the aligned image on top of the reference image
     Mat resultImage = image.clone();

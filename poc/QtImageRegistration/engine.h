@@ -19,10 +19,7 @@ class Engine : public QObject, public Alignable
     Mat m_referenceImage, m_targetImage;
 
 public:
-
-    explicit Engine(QObject *parent = nullptr, QString referenceImageAddress = QString(), QString targetImageAddress = QString());
     explicit Engine(QObject *parent = nullptr, QByteArray imageData1 = QByteArray(), QByteArray  imageData2 = QByteArray());
-    explicit Engine(QObject *parent = nullptr, const Mat& referenceImage = Mat(), const Mat& targetImage = Mat());
 
     Mat referenceImage() const;
     Mat targetImage() const;
@@ -30,11 +27,11 @@ public:
 signals:
 
 public slots:
-    Mat align(AlignmentAlgorithms algorithm) override;
+    Mat align(AlignmentAlgorithms algorithm, bool previewResult = false) override;
 
 private:
-    Mat align_featureBased();
-    Mat align_intensityBased();
+    Mat align_featureBased(bool previewResult = false);
+    Mat align_intensityBased(bool previewResult = false);
 };
 
 

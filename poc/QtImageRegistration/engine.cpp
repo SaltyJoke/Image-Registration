@@ -13,58 +13,50 @@ Mat Engine::targetImage() const
     return m_targetImage;
 }
 
-Engine::Engine(QObject *parent, QString referenceImageAddress, QString targetImageAddress) : QObject(parent)
-{
-    Mat referenceImage = ImageUtils::readImage(referenceImageAddress);
-    Mat targetImage = ImageUtils::readImage(targetImageAddress);
-
-    if (referenceImage.empty() || targetImage.empty()) {
-        QMessageBox::warning(nullptr, "Error", "Error in readin images");
-        return;
-    }
-
-    this->m_referenceImage(referenceImage);
-    this->m_targetImage(targetImage);
-}
 
 Engine::Engine(QObject *parent, QByteArray imageData1, QByteArray imageData2) : QObject(parent)
 {
-    // Decode the image data using OpenCV
-    cv::Mat image1(imageData1.size(), 1, CV_8UC1, (void*)imageData1.data());
-    cv::Mat image2(imageData2.size(), 1, CV_8UC1, (void*)imageData2.data());
 
+    qDebug() << "Size of imageData2:" << imageData2.size() <<  "first 100: " << imageData2.left(100);
 
-
-    if (image1.empty() || image2.empty()) {
-        QMessageBox::warning(nullptr, "Error", "Error in reading images");
+    // Convert QByteArray to cv::Mat
+    // Decode image data1
+    std::vector<uchar> vecData1(imageData1.begin(), imageData1.end());
+    this->m_referenceImage = cv::imdecode(cv::Mat(vecData1), cv::IMREAD_COLOR);
+    if (this->m_referenceImage.empty()) {
+        QMessageBox::warning(nullptr, "Error", "Error in reading image 1");
         return;
     }
 
-    this->m_referenceImage = image1;
-    this->m_targetImage = image2;
+
+    // Decode image data2
+    std::vector<uchar> vecData2(imageData2.begin(), imageData2.end());
+    this->m_targetImage = cv::imdecode(cv::Mat(vecData2), cv::IMREAD_COLOR);
+    if (this->m_targetImage.empty()) {
+        QMessageBox::warning(nullptr, "Error", "Error in reading image 2");
+        return;
+    }
+
+    // Uncomment if you want to preview images
+    //  ImageUtils::showImage(this->targetImage(), "Target Image");
+    //  ImageUtils::showImage(this->targetImage(), "Target Image");
 }
 
-Engine::Engine(QObject *parent, const Mat &referenceImage, const Mat &targetImage) : QObject(parent), m_referenceImage(referenceImage), m_targetImage(targetImage)
+Mat Engine::align(AlignmentAlgorithms algorithm, bool previewResult)
 {
-
-}
-
-Mat Engine::align(AlignmentAlgorithms algorithm)
-{
-    Mat alignedImage;
+    Mat matrix;
     switch (algorithm) {
     case AlignmentAlgorithms::FEATURE_BASED:
-        alignedImage = align_featureBased();
+        matrix = align_featureBased(previewResult);
     case AlignmentAlgorithms::INTENSITY_BASED:
-        alignedImage = align_intensityBased();
+        matrix = align_intensityBased(previewResult);
     default:
         break;
     }
-
-    return alignedImage;
+    return matrix;
 }
 
-Mat Engine::align_featureBased()
+Mat Engine::align_featureBased(bool previewResult)
 {
     // Convert images to grayscale
     Mat grayReference, grayTarget;
@@ -109,15 +101,19 @@ Mat Engine::align_featureBased()
 
     // Find homography matrix with weighted points
     Mat homography = findHomography(matchedPointsTarget, matchedPointsReference, RANSAC, 3.0, weights);
-    return homography;
 
-    // Warp target image using homography // uncomment if you want to preview
-    //    Mat alignedImage;
-    //    warpPerspective(this->m_targetImage, alignedImage, homography, this->m_referenceImage.size());
-    //    return alignedImage;
+    if(previewResult) {
+        // Warp target image using homography // uncomment if you want to preview
+        Mat alignedImage;
+        warpPerspective(this->m_targetImage, alignedImage, homography, this->m_referenceImage.size());
+        ImageUtils::previewResult(referenceImage(), alignedImage);
+    }
+
+
+    return homography;
 }
 
-Mat Engine::align_intensityBased()
+Mat Engine::align_intensityBased(bool previewResult)
 {
     // Convert input images to grayscale
     Mat sourceGray, targetGray;
@@ -138,11 +134,14 @@ Mat Engine::align_intensityBased()
                 MOTION_EUCLIDEAN, criteria
                 );
 
-    // Apply the transformation matrix to the target image
-    Mat alignedImage;
-    warpAffine(this->m_targetImage, alignedImage, warpMatrix, this->m_referenceImage.size()); // Use sourceImage.size() as output size
+    if(previewResult) {
+        // Apply the transformation matrix to the target image
+        Mat alignedImage;
+        warpAffine(this->m_targetImage, alignedImage, warpMatrix, this->m_referenceImage.size()); // Use sourceImage.size() as output size
+        ImageUtils::previewResult(this->referenceImage(), alignedImage);
+    }
 
-    return alignedImage;
+    return warpMatrix;
 
     //////  To compare the output with these 2 approaches
     //////  Find ROIs for both reference and target images

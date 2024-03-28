@@ -5,6 +5,12 @@
 
 Server::Server(QObject *parent) : QTcpServer(parent)
 {
+    if (this->m_socket && this->m_socket->state() == QAbstractSocket::ConnectedState) {
+        this->m_socket->readAll();
+        this->m_socket->flush();
+        this->m_socket->disconnectFromHost();
+        this->m_socket->deleteLater();
+    }
 }
 
 Server::~Server()
@@ -22,45 +28,69 @@ void Server::startServer(int port)
 
 void Server::incomingConnection(qintptr socketDescriptor)
 {
-    QTcpSocket *socket = new QTcpSocket(this);
-    socket->setSocketDescriptor(socketDescriptor);
 
-    connect(socket, &QTcpSocket::readyRead, [=]() {
-        QByteArray requestData = socket->readAll();
+    // If there's an existing socket, delete it before processing a new connection
+    if (this->m_socket && this->m_socket->state() == QAbstractSocket::ConnectedState) {
+        this->m_socket->readAll();
+        this->m_socket->flush();
+        this->m_socket->disconnectFromHost();
+        this->m_socket->deleteLater();
+    }
+
+    qDebug() << "****************** OPPENING CONNECTION ****************** ";
+
+    this->m_socket = new QTcpSocket(this);
+    this->m_socket->setSocketDescriptor(socketDescriptor);
+
+    connect(this->m_socket, &QTcpSocket::readyRead, this, &Server::handleDataReceived);
+
+    // Connect the socket's disconnected signal to handleCloseConnection slot
+      connect(this->m_socket, &QTcpSocket::disconnected, this, &Server::handleCloseConnection);
+//    this->m_socket->deleteLater();
+}
+
+void Server::handleDataReceived()
+{
+
+    qDebug() << 'HANDLE DATA RECEIVED CALLED';
+    if (!this->m_socket) return;
+
+    QJsonObject responseJson;
+    try{
+        QByteArray requestData = this->m_socket->readAll();
+
         emit newRequestReceived(requestData);
 
         // Check if it's an OPTIONS request for CORS preflight
         if (this->isPreflightRequest(requestData)) {
             this->handlePreflightRequest();
-            return;
+
+        } else {
+            responseJson["data"] = processRequest(requestData);
+            sendData(responseJson);
         }
+    } catch (const std::exception &e) {
+        responseJson["error"] = QString("something went wrong >> %1").arg(e.what());
+        sendData(responseJson);
+    }
+}
 
-        QJsonObject responseJson = processRequest(requestData);
+void Server::handleCloseConnection()
+{
+    qDebug() << "---------------------------- CLOSING CONNECTION ----------------------------";
+    QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
+      if (!socket)
+          return;
 
-        QJsonDocument responseDoc(responseJson);
-        QByteArray response;
-        response.append("HTTP/1.1 200 OK\r\n");
-        response.append("Content-Type: application/json\r\n");
-        response.append("Access-Control-Allow-Origin: http://localhost:8080\r\n"); // Specify your web app's origin
-        response.append("Access-Control-Allow-Methods: POST\r\n"); // Specify allowed methods
-        response.append("Access-Control-Allow-Headers: Content-Type\r\n"); // Allow Content-Type header
-        response.append("Content-Length: " + QByteArray::number(responseJson.size()) + "\r\n");
-        response.append("\r\n");
-        response.append(responseDoc.toJson());
-
-        socket->write(response);
-        socket->flush();
-        socket->waitForBytesWritten();
-        socket->close();
-    });
+      socket->deleteLater(); // Delete the socket object after it's closed
 }
 
 QJsonObject Server::processRequest(const QByteArray &request)
 {
+
+    // Process the received request and prepare the response here
     QJsonObject jsonResponse;
 
-    // Process the received request here
-    qDebug() << "Received request:" << request;
 
     // Parse the HTTP request
     // Assuming the first line contains the HTTP method
@@ -84,7 +114,7 @@ QJsonObject Server::processRequest(const QByteArray &request)
 
     // Extract JSON content from the request body
     QByteArray jsonData = request.mid(separatorPosition + 4);
-    qDebug() << "Received JSON data:" << jsonData;
+//    qDebug() << "Received JSON data:" << jsonData;
 
 
     // Parse the JSON request
@@ -127,7 +157,7 @@ QJsonObject Server::handleGetRequest(QString path, const QJsonObject &requestDat
 
 QJsonObject Server::handlePostRequest(QString path, const QJsonObject &requestData)
 {
-    qDebug() << "handle post request called "<< path << requestData;
+    qDebug() << "handle post request called "<< path;
     QJsonObject jsonResponse;
 
     // Handle GET request logic here
@@ -138,31 +168,80 @@ QJsonObject Server::handlePostRequest(QString path, const QJsonObject &requestDa
         jsonResponse["error"] = "Unsupported path";
     }
 
-    return requestData;
+    return jsonResponse;
 }
 
-void Server::sendData(const QByteArray &data)
+void Server::sendData(const QJsonObject &jsonObj)
 {
-    for (auto socket : this->findChildren<QTcpSocket *>()) {
-        socket->write(data);
-        socket->flush();
-        socket->waitForBytesWritten();
-    }
+    QJsonDocument responseDoc(jsonObj);
+    QByteArray response;
+    response.append("HTTP/1.1 200 OK\r\n");
+    response.append("Content-Type: application/json\r\n");
+    response.append("Access-Control-Allow-Origin: http://localhost:8080\r\n"); // Specify your web app's origin
+    response.append("Access-Control-Allow-Methods: POST\r\n"); // Specify allowed methods
+    response.append("Access-Control-Allow-Headers: Content-Type\r\n"); // Allow Content-Type header
+    response.append("Content-Length: " + QByteArray::number(jsonObj.size()) + "\r\n");
+    response.append("\r\n");
+    response.append(responseDoc.toJson());
+
+    this->m_socket->write(response);
+    this->m_socket->flush();
+    this->m_socket->waitForBytesWritten();
+    this->m_socket->disconnectFromHost(); // Close the connection
+    this->m_socket->close();
 }
 
 QJsonObject Server::handleAlignRequest(const QJsonObject &requestData)
 {
+    qDebug() << "handleAlignRequest called";
     QJsonObject jsonResponse;
     try {
         if (requestData.contains("image1") && requestData.contains("image2")) {
+            qDebug() << "requestData has image1 and image2 data in it";
             // Extract image data from the JSON request
-            QByteArray imageData1 = QByteArray::fromBase64(requestData["image1"].toString().toLatin1());
-            QByteArray imageData2 = QByteArray::fromBase64(requestData["image2"].toString().toLatin1());
+
+            QByteArray imageData1 = this->extractImageDataFromJsonValue(requestData["image1"]);
+            //  QByteArray imageData1 = QByteArray::fromBase64(requestData["image1"].toString().toLatin1());
+            if (imageData1.isEmpty()) {
+                qDebug() << "Error: Failed to decode Base64-encoded image 1 data";
+            } else {
+                qDebug() << "converted image1 data to QBteArray";
+                qDebug() << "Size of imageData1:" << imageData1.size() <<  "first 100: " << imageData1.left(100);
+
+            }
+
+            QByteArray imageData2 = this->extractImageDataFromJsonValue(requestData["image2"]);
+            //            QByteArray imageData2 = QByteArray::fromBase64(requestData["image2"].toString().toLatin1());
+            if (imageData2.isEmpty()) {
+                qDebug() << "Error: Failed to decode Base64-encoded image 2 data";
+            } else {
+                qDebug() << "converted image2 data to QBteArray";
+                qDebug() << "Size of imageData2:" << imageData2.size() <<  "first 100: " << imageData2.left(100);
+            }
+
 
             Engine* registrationEngine = new Engine(this, imageData1, imageData2);
+            qDebug() << "registrationEngine instance created";
 
-            cv::Mat alignedImage = registrationEngine->align(Alignable::AlignmentAlgorithms::INTENSITY_BASED);
-//            ImageUtils::previewResult(referenceImage, alignedImage);
+            cv::Mat matrix = registrationEngine->align(Alignable::AlignmentAlgorithms::INTENSITY_BASED, true);
+
+            // Convert cv::Mat matrix to a nested array structure
+            QJsonArray matrixJson;
+            for (int i = 0; i < matrix.rows; ++i) {
+                QJsonArray rowJson;
+                for (int j = 0; j < matrix.cols; ++j) {
+                    rowJson.append(matrix.at<double>(i, j));
+                }
+                matrixJson.append(rowJson);
+            }
+
+            // Serialize matrixJson to a JSON string
+            QJsonDocument doc(matrixJson);
+            QString matrixString = doc.toJson();
+
+            qDebug() << "matrix string" << matrixString;
+            jsonResponse["successful"] = "sent image succesfully decoded in server";
+            jsonResponse["transformation"] = matrixString;
         }
         return jsonResponse;
     } catch (const std::exception &e) {
@@ -172,14 +251,28 @@ QJsonObject Server::handleAlignRequest(const QJsonObject &requestData)
 
 bool Server::isPreflightRequest(const QByteArray &request)
 {
+    bool isOptions = false;
+    bool hasAccessControlRequestMethod = false;
+
     QString requestString = QString::fromUtf8(request);
     QStringList lines = requestString.split("\r\n");
+    qDebug() << lines[0];
+
     // Check if it's an OPTIONS request and includes the necessary CORS headers
     for (const QString &line : lines) {
-        if (line.startsWith("OPTIONS") && line.contains("Access-Control-Request-Method")) {
+        if (line.startsWith("OPTIONS")) {
+            qDebug() << "OPTIONS; " << line;
+            isOptions = true;
+        } else if (line.contains("Access-Control-Request-Method")) {
+            qDebug() << line;
+            hasAccessControlRequestMethod = true;
+        }
+        if (isOptions && hasAccessControlRequestMethod) {
+            qDebug() << "isPreflightRequest";
             return true;
         }
     }
+
     return false;
 }
 
@@ -193,5 +286,19 @@ void Server::handlePreflightRequest()
                           "Access-Control-Max-Age: 86400\r\n"
                           "\r\n";
 
+    this->m_socket->write(response);
+}
 
+
+QByteArray Server::extractImageDataFromJsonValue(QJsonValue value)
+{
+    QString base64Data = QString::fromUtf8(value.toString().toUtf8());
+    QStringList parts = base64Data.split(",");
+
+    if (parts.size() != 2) {
+        return QByteArray();
+        // Invalid data URI format, handle error
+    } else {
+        return QByteArray::fromBase64(parts[1].toUtf8());
+    }
 }

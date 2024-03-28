@@ -5,12 +5,15 @@
 #include <QTcpServer>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include "engine.h"
 #include "alignable.h"
 
 class Server : public QTcpServer
 {
     Q_OBJECT
+
+    QTcpSocket *m_socket;
 public:
     explicit Server(QObject *parent = nullptr);
     ~Server();
@@ -24,6 +27,9 @@ protected:
 
 private slots:
 
+    void handleDataReceived();
+    void handleCloseConnection();
+
     bool isPreflightRequest(const QByteArray &request);
     void handlePreflightRequest();
 
@@ -32,11 +38,13 @@ private slots:
     QJsonObject handleAlignRequest(const QJsonObject &requestData);
     QJsonObject handlePostRequest(QString path, const QJsonObject &requestData);
 
+    QByteArray extractImageDataFromJsonValue(QJsonValue value);
+
 signals:
     void newRequestReceived(const QByteArray &request);
 
 public slots:
-    void sendData(const QByteArray &data);
+    void sendData(const QJsonObject &jsonObj);
 };
 
 #endif // SERVER_H

@@ -14,7 +14,7 @@ public:
            INTENSITY_BASED,
        };
 private:
-    virtual Mat align(AlignmentAlgorithms algorithm) = 0; // Pure virtual function for alignment
+    virtual Mat align(AlignmentAlgorithms algorithm, bool previewResult) = 0; // Pure virtual function for alignment
 };
 
 #endif // ALIGNABLE_H

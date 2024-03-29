@@ -80,14 +80,24 @@ function getIndexFromId(id: string) {
   return Number.parseInt(words[1]);
 }
 
+let isDraggingMouse = -1;
+let draggingMouseStartX = 0;
+let draggingMouseStartY = 0;
 function trackMouse(event: MouseEvent) {
-  const canvas = document.getElementById('canvas-preview') as HTMLCanvasElement;;
-  const canvasRect = canvas.getBoundingClientRect();
-  registrationHandling.setOffsets(
-    event.clientX - canvasRect.left,
-    event.clientY - canvasRect.top
-  );
-  registrationHandling.drawImages(canvas, document.querySelector('#msqerror-preview') as HTMLElement);
+  if (isDraggingMouse === 0) {
+    const deltaX = event.clientX - draggingMouseStartX;
+    const deltaY = event.clientY - draggingMouseStartY;
+    const [offsetX, offsetY] = registrationHandling.getOffsets();
+
+    registrationHandling.setOffsets(
+      offsetX + deltaX,
+      offsetY + deltaY
+    );
+    draggingMouseStartX = event.clientX;
+    draggingMouseStartY = event.clientY;
+    const canvas = document.getElementById('canvas-preview') as HTMLCanvasElement;;
+    registrationHandling.drawImages(canvas, document.querySelector('#msqerror-preview') as HTMLElement);
+  }
 }
 
 function saveBlobImage(blob, width, height, filenamePrefix) {
@@ -236,7 +246,20 @@ export default function subscribeEventHandlers() {
   document
     .getElementById('button-batch')
     .addEventListener('change', startBatchTest);
+  document.addEventListener('mousedown', (event) => {
+    if (event.button === 0) {
+        isDraggingMouse = event.button;
+        draggingMouseStartX = event.clientX;
+        draggingMouseStartY = event.clientY;
+        document.body.focus();
+    }
+  });
   document.addEventListener('mousemove', trackMouse);
+  document.addEventListener('mouseup', (event) => {
+    if (event.button === 0) {
+      isDraggingMouse = -1;
+    }
+  });
   document
     .getElementById('button-savecanvas-0')
     .addEventListener('click', saveCanvas0);

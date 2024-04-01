@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode=development",
-    "start": "node node_modules/http-server/bin/http-server -c-1 -p 8089",
+    "start": "node node_modules/http-server/bin/http-server -c-1 -p 8080",
     "restart": "rm -rf dist; npm run build; npm start;",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

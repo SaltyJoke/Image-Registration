@@ -2,7 +2,6 @@ import readDicomFile from './rawdicom/readDicomFile';
 import DicomInstance from './rawdicom/instance/DicomInstance';
 import dicomToCanvas from './rendering/dicomToCanvas';
 import registrationHandling from './registration/registrationHandling';
-import { requestAlignImages } from './api';
 import { initWebSocket, sendImages } from './websocket';
 
 const webSocket = initWebSocket();
@@ -76,6 +75,73 @@ function fileChosen(event: Event) {
       registrationHandling.setImage(index, imageData, 1, 1);
     });
   }
+}
+
+function dicomfFolderChosen(event: Event) {
+  const fileSelector = event.target as HTMLInputElement;
+  const files = fileSelector.files;
+
+  const pairs = {};
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const { name: fileName, webkitRelativePath: filePath } = file;
+
+    // ignore non-dicom files
+    if (fileName.substring(fileName.lastIndexOf('.') + 1) !== 'dcm') continue;
+
+    const dirPath = filePath.substring(0, filePath.lastIndexOf('/'));
+
+    if (!pairs[dirPath]) {
+      pairs[dirPath] = { sourceImage: { fileName, file } };
+    } else {
+      pairs[dirPath] = { ...pairs[dirPath], targetImage: { fileName, file } };
+    }
+  }
+
+  console.log({ pairs });
+
+  const tasks = [];
+  Object.keys(pairs).forEach(async (dirPath, index) => {
+    const { sourceImage, targetImage } = pairs[dirPath];
+
+    const sourceDicom = await readDicomFile(sourceImage.file);
+    const referenceImageCanvas = document.createElement(
+      `canvas-${index}-source`
+    ) as HTMLCanvasElement;
+
+    const sourceImageData = dicomToCanvas({
+      dicom: sourceDicom,
+      canvas: referenceImageCanvas,
+      windowLevel: 0,
+      windowWidth: 1500,
+    });
+    referenceImageCanvas.getContext('2d').putImageData(sourceImageData, 0, 0);
+
+    const targetDicom = await readDicomFile(targetImage.file);
+    const targetImageCanvas = document.createElement(
+      `canvas-${index}-target`
+    ) as HTMLCanvasElement;
+
+    const targetImageData = dicomToCanvas({
+      dicom: targetDicom,
+      canvas: targetImageCanvas,
+      windowLevel: 0,
+      windowWidth: 1500,
+    });
+    targetImageCanvas.getContext('2d').putImageData(targetImageData, 0, 0);
+
+    tasks.push(
+      sendImages(
+        webSocket,
+        { referenceImageCanvas, targetImageCanvas },
+        { reqId: index + 1 }
+      )
+    );
+  });
+
+  Promise.all(tasks).catch((err) => {
+    console.error({ err });
+  });
 }
 
 function getIndexFromId(id: string) {
@@ -190,4 +256,7 @@ export default function subscribeEventHandlers() {
   document
     .getElementById('button-savecanvas-1')
     .addEventListener('click', saveCanvas1);
+  document
+    .getElementById('choosefolder-dicom')
+    .addEventListener('change', dicomfFolderChosen);
 }

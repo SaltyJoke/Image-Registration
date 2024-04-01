@@ -3,6 +3,9 @@ import DicomInstance from './rawdicom/instance/DicomInstance';
 import dicomToCanvas from './rendering/dicomToCanvas';
 import registrationHandling from './registration/registrationHandling';
 import { requestAlignImages } from './api';
+import { initWebSocket, sendImages } from './websocket';
+
+const webSocket = initWebSocket();
 
 function readFile(file: File) {
   return new Promise((resolve, reject) => {
@@ -143,16 +146,28 @@ function saveCanvas1(event: Event) {
 }
 
 function prepareAndSendAlignRequest() {
-  const { blob: blob0, canvasToSave: canvas0 } = prepareBlobFromCanvas(0);
-  const { blob: blob1, canvasToSave: canvas1 } = prepareBlobFromCanvas(1);
+  const { blob: blob0, canvasToSave: referenceImageCanvas } =
+    prepareBlobFromCanvas(0);
+  const { blob: blob1, canvasToSave: targetImageCanvas } =
+    prepareBlobFromCanvas(1);
 
-  const payload = {
-    image1: canvas0.toDataURL('image/png'),
-    image2: canvas1.toDataURL('image/png'),
-  };
-
-  console.log({ payload });
-  requestAlignImages(payload);
+  Promise.all([
+    sendImages(
+      webSocket,
+      { referenceImageCanvas, targetImageCanvas },
+      { reqId: 1 }
+    ),
+    sendImages(
+      webSocket,
+      { referenceImageCanvas, targetImageCanvas: referenceImageCanvas },
+      { reqId: 2 }
+    ),
+    sendImages(
+      webSocket,
+      { referenceImageCanvas: targetImageCanvas, targetImageCanvas },
+      { reqId: 3 }
+    ),
+  ]).catch((err) => console.error({ error: err }));
 }
 
 export default function subscribeEventHandlers() {

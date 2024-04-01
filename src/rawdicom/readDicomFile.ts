@@ -1,6 +1,7 @@
-import parseDicomInstance from "./parseDicomInstance";
+import DicomInstance from './instance/DicomInstance';
+import parseDicomInstance from './parseDicomInstance';
 
-export default function readDicomFile(file: File) {
+export default function readDicomFile(file: File): Promise<DicomInstance> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.addEventListener('load', (event: Event) => {

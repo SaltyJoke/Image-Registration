@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <qmessagebox.h>
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -8,11 +10,29 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    this->m_server = new Server(this);
+
+    connect(this->m_server, &Server::newRequestReceived, this, &MainWindow::handleRequestReceived);
+
+    int port = 8989;
+    this->m_server->startServer(port);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::handleRequestReceived(const QByteArray &request)
+{
+    // Process the received request here
+//    qDebug() << "Received request:" << request;
+    this->ui->txtLogs->appendPlainText(request);
+    this->ui->txtLogs->appendPlainText("-----");
+
+//    QJsonObject responseObject = this->m_server->processRequest(request);
+
 }
 
 void MainWindow::on_txtImg1_returnPressed()
@@ -31,74 +51,66 @@ void MainWindow::on_txtImg2_returnPressed()
 
 void MainWindow::on_btnPreviewImg1_pressed()
 {
-    previewImage(this->ui->txtImg1->text());
+    ImageUtils::showImage(this->ui->txtImg1->text());
 }
 
 void MainWindow::on_btnPreviewImg2_pressed()
 {
-    previewImage(this->ui->txtImg2->text());
+    ImageUtils::showImage(this->ui->txtImg2->text());
 }
 
 void MainWindow::on_btnFeatureBased_pressed()
 {
-    Mat referenceImage = imread(this->ui->txtImg1->text().toStdString());
-    Mat targetImage = imread(this->ui->txtImg2->text().toStdString());
+    try {
+        Mat referenceImage = imread(this->ui->txtImg1->text().toStdString());
+        Mat targetImage = imread(this->ui->txtImg2->text().toStdString());
 
 
-    if (referenceImage.empty() || targetImage.empty()) {
-        // Handle case when image loading fails
-        return;
+        if (referenceImage.empty() || targetImage.empty()) {
+            // Handle case when image loading fails
+            return;
+        }
+
+        // Align images using feature-based registration
+        Mat alignedImage = alignImages_FeatureBased(referenceImage, targetImage);
+
+        // Overlay the aligned image on top of the reference image
+        Mat resultImage = referenceImage.clone();
+        addWeighted(referenceImage, 0.4, alignedImage, 0.8, 0, resultImage);
+
+        QString outFileName = "/Users/mehrdadnekopour/Desktop/aligned-fb.JPG";
+        imwrite(outFileName.toStdString(), resultImage);
+
+        imshow(outFileName.toStdString(), resultImage);
+    } catch (const std::exception &e) {
+        qDebug() << "Exception occurred: " << e.what();
+        QMessageBox::warning(nullptr, "Error", e.what());
     }
-
-    // Align images using feature-based registration
-    Mat alignedImage = alignImages_FeatureBased(referenceImage, targetImage);
-
-    // Overlay the aligned image on top of the reference image
-    Mat resultImage = referenceImage.clone();
-    addWeighted(referenceImage, 0.5, alignedImage, 0.5, 0, resultImage);
-
-    QString outFileName = "/Users/mehrdadnekopour/Desktop/aligned-fb.JPG";
-    imwrite(outFileName.toStdString(), resultImage);
-
-    imshow(outFileName.toStdString(), resultImage);
 }
 
 void MainWindow::on_btnIntensityBased_pressed()
 {
-    Mat referenceImage = imread(this->ui->txtImg1->text().toStdString());
-    Mat targetImage = imread(this->ui->txtImg2->text().toStdString());
+//    try {
+//        Mat referenceImage = ImageUtils::readImage(this->ui->txtImg1->text());
+//        Mat targetImage = ImageUtils::readImage(this->ui->txtImg2->text());
 
+//        if (referenceImage.empty() || targetImage.empty()) {
+//            QMessageBox::warning(nullptr, "Error", "Error in readin images");
+//            return;
+//        }
 
-    if (referenceImage.empty() || targetImage.empty()) {
-        // Handle case when image loading fails
-        return;
-    }
+//        Engine* registrationEngine = new Engine(this, referenceImage, targetImage);
 
-    Mat alignedImage = alignImages_IntensityBased(referenceImage, targetImage, MOTION_TRANSLATION);
-    // Overlay the aligned image on top of the reference image
-    Mat resultImage = referenceImage.clone();
-    addWeighted(referenceImage, 0.5, alignedImage, 0.5, 0, resultImage);
-    QString outFileName = "/Users/mehrdadnekopour/Desktop/aligned-ib.JPG";
-    imwrite(outFileName.toStdString(), resultImage);
-    imshow(outFileName.toStdString(), resultImage);
+//        Mat alignedImage = registrationEngine->align(Alignable::AlignmentAlgorithms::INTENSITY_BASED);
+//        ImageUtils::previewResult(referenceImage, alignedImage);
 
-
-    // To compare the output with these 2 approaches
-    // Find ROIs for both reference and target images
-    // Find the common ROI between reference and target images
-    Rect commonROI = calculateROIs(referenceImage, targetImage);
-    Mat alignedImage_WithROI = alignImages_IntensityBased_withROI(referenceImage, targetImage, MOTION_TRANSLATION, commonROI);
-    Mat resultWithROI = referenceImage.clone();
-    addWeighted(referenceImage, 0.5, alignedImage_WithROI, 0.5, 0, resultWithROI);
-    QString outFileName_roi = "/Users/mehrdadnekopour/Desktop/aligned-ib-roi.JPG";
-    imwrite(outFileName_roi.toStdString(), resultImage);
-    imshow(outFileName_roi.toStdString(), resultImage);
-}
-
-void MainWindow::on_btnRegister_pressed()
-{
+//    } catch (const std::exception &e) {
+//        qDebug() << "Exception occurred: " << e.what();
+//        QMessageBox::warning(nullptr, "Error", e.what());
+//    }
 
 }
+
 // utils -------
 Mat MainWindow::alignImages_FeatureBased(Mat &referenceImage, Mat &targetImage)
 {
@@ -151,35 +163,6 @@ Mat MainWindow::alignImages_FeatureBased(Mat &referenceImage, Mat &targetImage)
     warpPerspective(targetImage, alignedImage, homography, referenceImage.size());
 
     return alignedImage;
-}
-
-Mat MainWindow::alignImages_IntensityBased(Mat &sourceImage, Mat &targetImage, int motionModel)
-{
-    // Convert input images to grayscale
-    Mat sourceGray, targetGray;
-    cvtColor(sourceImage, sourceGray, COLOR_BGR2GRAY);
-    cvtColor(targetImage, targetGray, COLOR_BGR2GRAY);
-
-    // Define motion model
-    Mat warpMatrix = Mat::eye(2, 3, CV_32F);
-
-    // Set termination criteria
-    int maxIterations = 100;
-    double epsilon = 1e-6;
-    TermCriteria criteria(TermCriteria::COUNT + TermCriteria::EPS, maxIterations, epsilon);
-
-    // Perform registration using OpenCV function
-    findTransformECC(
-                targetGray, sourceGray, warpMatrix,
-                motionModel, criteria
-                );
-
-    // Apply the transformation matrix to the target image
-    Mat registeredImage;
-    warpAffine(targetImage, registeredImage, warpMatrix, sourceImage.size()); // Use sourceImage.size() as output size
-
-    return registeredImage;
-
 }
 
 Mat MainWindow::alignImages_IntensityBased_withROI(Mat &sourceImage, Mat &targetImage, int motionModel, Rect roi)
@@ -270,12 +253,6 @@ Rect MainWindow::calculateROIs(const Mat& referenceImage, const Mat& targetImage
     commonROI &= Rect(0, 0, grayReference.cols, grayReference.rows);
 
     return commonROI;
-}
-
-void MainWindow::previewImage(QString imageAddress)
-{
-    Mat image = imread(imageAddress.toStdString(), IMREAD_COLOR);
-    imshow(QString(imageAddress.split('/').last()).toStdString(), image);
 }
 
 

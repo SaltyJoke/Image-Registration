@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>880</width>
-    <height>199</height>
+    <width>892</width>
+    <height>459</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,17 +23,17 @@
       <x>10</x>
       <y>11</y>
       <width>851</width>
-      <height>171</height>
+      <height>431</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="txtImg1">
-       <property name="text">
-        <string/>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btnPreviewImg1">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="placeholderText">
-        <string>Enter Image Address</string>
+       <property name="text">
+        <string>Preview</string>
        </property>
       </widget>
      </item>
@@ -47,13 +47,40 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="btnPreviewImg1">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="txtImg1">
+       <property name="text">
+        <string>/Volumes/Data/Work/CHC/image_registeration/Image-Registration/poc/samples/body-ref.png</string>
+       </property>
+       <property name="placeholderText">
+        <string>Enter Image Address</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="btnIntensityBased">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
-        <string>Preview</string>
+        <string>Align Images (Intesity-based Registration - Translation)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Reference Image</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="txtImg2">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>Enter Image Address</string>
        </property>
       </widget>
      </item>
@@ -71,39 +98,8 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="btnIntensityBased">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Align Images (Intesity-based Registration - Translation)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="txtImg2">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="placeholderText">
-        <string>Enter Image Address</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Reference Image</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="btnRegister">
-       <property name="text">
-        <string>Register</string>
-       </property>
-      </widget>
+     <item row="6" column="0" colspan="3">
+      <widget class="QPlainTextEdit" name="txtLogs"/>
      </item>
     </layout>
    </widget>
